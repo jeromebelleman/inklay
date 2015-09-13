@@ -1,0 +1,80 @@
+#! /usr/bin/env python
+
+'''
+Show layers and export PNGs
+'''
+
+import sys, os
+import argparse
+import tempfile
+import subprocess
+import xml.etree.ElementTree as ET
+import yaml
+
+LAYER = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/inkscape}groupmode='layer']"
+SHOWN = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/inkscape}label='%s']"
+
+def show(layer):
+    '''
+    Show layer
+    '''
+
+    layer.set('style', 'display:inline')
+
+def main():
+    '''
+    Main
+    '''
+
+    parser = argparse.ArgumentParser(description="Show layers and export PNGs.")
+    parser.add_argument('cfg', help="configuration YAML file")
+    parser.add_argument('inkscape', help="Inkscape SVG file")
+    parser.add_argument('outdir', help="output directory")
+    parser.add_argument('-n', '--dryrun', action='store_true',
+                        help="don't run Inkscape")
+    args = parser.parse_args()
+
+    with open(args.cfg) as fhl:
+        cfg = yaml.load(fhl, Loader=yaml.BaseLoader)
+
+    devnull = open(os.devnull, 'w')
+
+    for layset in cfg['laysets']:
+        tree = ET.parse(args.inkscape)
+
+        # Hide all layers
+        for layer in tree.findall(LAYER):
+            layer.set('style', 'display:none')
+
+        # Show common layers
+        for label in cfg['cfg']['common']:
+            layer = tree.find(SHOWN % label)
+            if layer is not None:
+                show(layer)
+            else:
+                print >> sys.stderr, "Couldn't find layer labelled '%s'" % label
+
+        # Show layers dictated by layer set
+        for label in cfg['laysets'][layset]:
+            layer = tree.find(SHOWN % label)
+            if layer is not None:
+                show(layer)
+            else:
+                print >> sys.stderr, "Couldn't find layer labelled '%s'" % label
+
+        # Write temporary Inkscape file
+        tmp = tempfile.NamedTemporaryFile()
+        tree.write(tmp.name)
+
+        # Export PNG
+        if not args.dryrun:
+            subprocess.call(['inkscape',
+                             '--export-png=%s/%s.png' % (args.outdir, layset),
+                             '--export-width=%s' % cfg['cfg']['width'],
+                             tmp.name], stderr=devnull)
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        pass
