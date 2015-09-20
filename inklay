@@ -39,7 +39,17 @@ def main():
 
     devnull = open(os.devnull, 'w')
 
+    laysets = set()
     for layset in cfg['laysets']:
+        print "Running %s" % layset
+
+        # Warn if a layset already exists under another name
+        laylist = ','.join(cfg['laysets'][layset])
+        if laylist in laysets:
+            print >> sys.stderr, "%s's %s already exists" % (layset, laylist)
+        laysets.add(laylist)
+
+        # Parse XML
         tree = ET.parse(args.inkscape)
 
         # Hide all layers
