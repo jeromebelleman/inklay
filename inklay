@@ -36,10 +36,12 @@ def main():
     parser.add_argument('outdir', help="output directory")
     parser.add_argument('-n', '--dryrun', action='store_true',
                         help="don't run Inkscape")
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help="show Inkscape command run")
     args = parser.parse_args()
 
     with open(args.cfg) as fhl:
-        cfg = yaml.load(fhl, Loader=yaml.BaseLoader)
+        cfg = yaml.load(fhl)
 
     devnull = open(os.devnull, 'w')
 
@@ -95,16 +97,19 @@ def main():
             if cfg['cfg']['format'] == 'png':
                 arguments.append('--export-width=%s' % cfg['cfg']['width'])
             elif cfg['cfg']['format'] == 'pdf':
-                arguments.append('--export-dpi=%s' % cfg['cfg']['dpi'])
+                # Not the default in spite of what the manpage says
+                arguments.append('--export-area-page')
                 arguments.append('--export-pdf-version=1.5')
-                arguments.append('--export-text-to-path')
-                pass
+                if 'text-to-path' in cfg['cfg'] and cfg['cfg']['text-to-path']:
+                    arguments.append('--export-text-to-path')
         except KeyError, exc:
             print >> sys.stderr, "Missing field %s in %s" % (exc, args.cfg)
             return 1
         arguments.append(tmp.name)
 
         # Run Inkscape
+        if args.verbose:
+            print ' '.join(arguments)
         if not args.dryrun:
             subprocess.call(arguments, stderr=devnull)
 
