@@ -95,6 +95,8 @@ def main():
                 )
             ]
             if cfg['cfg']['format'] == 'png':
+                if 'dpi' in cfg['cfg']:
+                    arguments.append('--export-dpi=%d' % cfg['cfg']['dpi'])
                 arguments.append('--export-width=%s' % cfg['cfg']['width'])
             elif cfg['cfg']['format'] == 'pdf':
                 # Not the default in spite of what the manpage says
