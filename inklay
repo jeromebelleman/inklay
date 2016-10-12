@@ -61,12 +61,13 @@ def main():
             layer.set('style', 'display:none')
 
         # Show common layers
-        for label in cfg['cfg']['common']:
-            for layer in tree.findall(SHOWN % label):
-                if layer is not None:
-                    show(layer)
-                else:
-                    print >> sys.stderr, COULDNT % label
+        if 'common' in cfg['cfg']:
+            for label in cfg['cfg']['common']:
+                for layer in tree.findall(SHOWN % label):
+                    if layer is not None:
+                        show(layer)
+                    else:
+                        print >> sys.stderr, COULDNT % label
 
         # Show layers dictated by layer set
         for label in cfg['laysets'][layset]:
