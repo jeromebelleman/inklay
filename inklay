@@ -16,6 +16,14 @@ LAYER = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/i
 SHOWN = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/inkscape}label='%s']"
 COULDNT = "Couldn't find layer labelled '%s'"
 
+# Should the order of laysets be dictated by the layer order?  No. Because a
+# given layset may comprise e.g. a layer that comes first and a layer that
+# comes last. What then should the order be?
+
+# Should a specifying layer mean including all its children? No. Because
+# there may be reasons why some of the children should never been shown
+# (like hiding reference images).
+
 def show(layer):
     '''
     Show layer
@@ -48,12 +56,6 @@ def main():
     laysets = set()
     for layset in cfg['laysets']:
         print "Composing %s" % layset
-
-        # Warn if a layset already exists under another name
-        laylist = ','.join(cfg['laysets'][layset])
-        if laylist in laysets:
-            print >> sys.stderr, "%s's %s already exists" % (layset, laylist)
-        laysets.add(laylist)
 
         # Parse XML
         tree = ET.parse(args.inkscape)
