@@ -74,12 +74,19 @@ def main():
                         print >> sys.stderr, COULDNT % label
 
         # Show layers dictated by layer set
-        for label in layset[key]:
-            for layer in tree.findall(SHOWN % label):
+        if layset[key]:
+            for label in layset[key]:
+                for layer in tree.findall(SHOWN % label):
+                    if layer is not None:
+                        show(layer)
+                    else:
+                        print >> sys.stderr, COULDNT % label
+        else:
+            for layer in tree.findall(SHOWN % key):
                 if layer is not None:
                     show(layer)
                 else:
-                    print >> sys.stderr, COULDNT % label
+                    print >> sys.stderr, COULDNT % key
 
         # Write temporary Inkscape file
         tmp = tempfile.NamedTemporaryFile()
