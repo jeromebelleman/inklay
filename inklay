@@ -53,9 +53,9 @@ def main():
 
     devnull = open(os.devnull, 'w')
 
-    laysets = set()
-    for layset in cfg['laysets']:
-        print "Composing %s" % layset
+    for i, layset in enumerate(cfg['laysets']):
+        key = layset.keys()[0]
+        print "Composing %s" % key
 
         # Parse XML
         tree = ET.parse(args.inkscape)
@@ -74,7 +74,7 @@ def main():
                         print >> sys.stderr, COULDNT % label
 
         # Show layers dictated by layer set
-        for label in cfg['laysets'][layset]:
+        for label in layset[key]:
             for layer in tree.findall(SHOWN % label):
                 if layer is not None:
                     show(layer)
@@ -87,15 +87,24 @@ def main():
 
         # Prepare Inkscape arguments
         try:
-            arguments = [
-                'inkscape',
-                '--export-%s=%s/%s.%s' % (
+            arguments = ['inkscape']
+
+            if 'number' in cfg['cfg'] and cfg['cfg']['number']:
+                arguments.append('--export-%s=%s/%03d-%s.%s' % (
                     cfg['cfg']['format'],
                     args.outdir,
-                    layset,
+                    i,
+                    key,
                     cfg['cfg']['format'],
-                )
-            ]
+                ))
+            else:
+                arguments.append('--export-%s=%s/%s.%s' % (
+                    cfg['cfg']['format'],
+                    args.outdir,
+                    key,
+                    cfg['cfg']['format'],
+                ))
+
             if cfg['cfg']['format'] == 'png':
                 if 'dpi' in cfg['cfg']:
                     arguments.append('--export-dpi=%d' % cfg['cfg']['dpi'])
