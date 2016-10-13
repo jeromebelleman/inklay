@@ -10,6 +10,7 @@ import argparse
 import tempfile
 import subprocess
 import xml.etree.ElementTree as ET
+import string
 import yaml
 
 LAYER = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/inkscape}groupmode='layer']"
@@ -90,7 +91,13 @@ def main():
 
         # Write temporary Inkscape file
         tmp = tempfile.NamedTemporaryFile()
-        tree.write(tmp.name)
+        xml = ET.tostring(tree.getroot())
+        try:
+            xml = string.Template(xml).substitute(number=i + 1)
+        except KeyError:
+            pass
+        tmp.write(xml)
+        tmp.flush()
 
         # Prepare Inkscape arguments
         try:
