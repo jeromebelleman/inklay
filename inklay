@@ -54,8 +54,14 @@ def main():
 
     devnull = open(os.devnull, 'w')
 
+    previ = 0
     for i, layset in enumerate(cfg['laysets']):
-        key = layset.keys()[0]
+        if len(layset.keys()) > 1:
+            for key in layset:
+                if key not in ('useprevious',):
+                    break
+        else:
+            key = layset.keys()[0]
         print "Composing %s" % key
 
         # Parse XML
@@ -93,7 +99,9 @@ def main():
         tmp = tempfile.NamedTemporaryFile()
         xml = ET.tostring(tree.getroot())
         try:
-            xml = string.Template(xml).substitute(number=i + 1)
+            if len(layset.keys()) > 1 and 'useprevious' in layset:
+                previ += 1
+            xml = string.Template(xml).substitute(number=i + 1 - previ)
         except KeyError:
             pass
         tmp.write(xml)
