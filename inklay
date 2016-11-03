@@ -55,10 +55,11 @@ def main():
     devnull = open(os.devnull, 'w')
 
     previ = 0
+    offset = 0
     for i, layset in enumerate(cfg['laysets']):
         if len(layset.keys()) > 1:
             for key in layset:
-                if key not in ('useprevious',):
+                if key not in ('number',):
                     break
         else:
             key = layset.keys()[0]
@@ -99,9 +100,12 @@ def main():
         tmp = tempfile.NamedTemporaryFile()
         xml = ET.tostring(tree.getroot())
         try:
-            if len(layset.keys()) > 1 and 'useprevious' in layset:
-                previ += 1
-            xml = string.Template(xml).substitute(number=i + 1 - previ)
+            if len(layset.keys()) > 1 and 'number' in layset:
+                if layset['number'] == 'previous':
+                    previ += 1
+                else:
+                    offset = layset['number'] - (i + 1 - previ)
+            xml = string.Template(xml).substitute(number=i + 1 - previ + offset)
         except KeyError:
             pass
         tmp.write(xml)
