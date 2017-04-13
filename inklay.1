@@ -1,0 +1,61 @@
+.TH "INKLAY" "1" "September 2016" "" ""
+.hy
+.SH NAME
+.PP
+inklay \[en] Show layers and export PNGs or PDFs
+.SH SYNOPSIS
+.PP
+inklay [\-\-help] [\-dryrun] \f[I]CFG\f[] \f[I]INKSCAPE\f[]
+\f[I]OUTDIR\f[] [\f[I]LAYERSET\f[] [\f[I]LAYERSET\f[] ...]]
+.SH CONFIG FILE
+.PP
+Inklay expects a config file looking like:
+.IP
+.nf
+\f[C]
+laysets:
+
+\ \ \ \ \-\ foo:\ #\ Only\ show\ all\ layers\ called\ \[aq]gazonk\[aq]\ and\ \[aq]bop\[aq]
+\ \ \ \ \ \ \ \ \-\ gazonk
+\ \ \ \ \ \ \ \ \-\ bop
+
+\ \ \ \ \-\ bar:\ #\ Only\ show\ all\ layers\ called\ \[aq]bar\[aq]
+\ \ \ \ \ \ useprevious:\ #\ Use\ previous\ slide\ number\ (overlays)
+
+\ \ \ \ \-\ baz:\ #\ Only\ show\ all\ layers\ called\ \[aq]quux\[aq]
+\ \ \ \ \ \ \ \ \-\ quux
+
+cfg:
+\ \ \ \ format:\ png\ #\ Or\ pdf
+\ \ \ \ common:
+\ \ \ \ \ \ \ \ \-\ fg
+\ \ \ \ \ \ \ \ \-\ bg
+\ \ \ \ number:\ true\ #\ Number\ file\ names\ according\ to\ their\ ordering
+
+\ \ \ \ dpi:\ 300\ #\ Only\ used\ for\ exporting\ PNGs\ (Inkscape\ default\ is\ 90)
+\ \ \ \ #\ width:\ 1024\ #\ Overrides\ dpi\ option,\ only\ used\ for\ exporting\ PNGs
+
+\ \ \ \ #\ text\-to\-path:\ true\ #\ Only\ used\ for\ exporting\ PDFs
+\ \ \ \ #\ export\-area\-drawing:\ true\ #\ Only\ used\ for\ exporting\ PDFs,\ default\ is\ false
+\f[]
+.fi
+.PP
+Inklay works on a temporary copy of the SVG file and leaves the original
+untouched.
+It first hides all layers.
+Then, for each layer set (\f[B]foo\f[], \f[B]bar\f[], \f[B]baz\f[],
+here), it creates a file into \f[I]OUTDIR\f[]
+(e.g.\ \f[I]OUTDIR\f[]/foo.pdf) with the corresponding layers
+(e.g.\ \f[B]gazonk\f[], \f[B]bop\f[]) shown.
+.PP
+Note that it shows all the layers with a matching name.
+Also, common layers may be listed under \f[B]common\f[] to be shown for
+all layer sets.
+E.g.\ \f[B]fg\f[] and \f[B]bg\f[] will be shown for \f[B]foo\f[],
+\f[B]bar\f[] and \f[B]baz\f[].
+.SH SLIDE NUMBERS
+.PP
+If inklay finds the \f[B]$number\f[] place holder in the Inkscape file,
+it will replace it with the slide number.
+.SH AUTHORS
+Jérôme Belleman.
