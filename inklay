@@ -43,6 +43,8 @@ def main():
     parser.add_argument('cfg', help="configuration YAML file")
     parser.add_argument('inkscape', help="Inkscape SVG file")
     parser.add_argument('outdir', help="output directory")
+    parser.add_argument('layerset', nargs='*',
+                        help="only compose this layer set")
     parser.add_argument('-n', '--dryrun', action='store_true',
                         help="don't run Inkscape")
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -54,9 +56,20 @@ def main():
 
     devnull = open(os.devnull, 'w')
 
+    # Choose layer sets
+    if args.layerset:
+        laysets = []
+        for layset in cfg['laysets']:
+            name = [name for name in layset.keys()
+                if 'name' != 'useprevious'][0]
+            if name in args.layerset:
+                laysets.append(layset)
+    else:
+        laysets = cfg['laysets']
+
     previ = 0
     offset = 0
-    for i, layset in enumerate(cfg['laysets']):
+    for i, layset in enumerate(laysets):
         if len(layset.keys()) > 1:
             for key in layset:
                 if key not in ('number',):
