@@ -137,7 +137,11 @@ def main():
                 arguments.append('--export-width=%s' % cfg['cfg']['width'])
             elif cfg['cfg']['format'] == 'pdf':
                 # Not the default in spite of what the manpage says
-                arguments.append('--export-area-page')
+                if 'export-area-drawing' in cfg['cfg'] \
+                    and cfg['cfg']['export-area-drawing']:
+                    arguments.append('--export-area-drawing')
+                else:
+                    arguments.append('--export-area-page')
                 arguments.append('--export-pdf-version=1.5')
                 if 'text-to-path' in cfg['cfg'] and cfg['cfg']['text-to-path']:
                     arguments.append('--export-text-to-path')
