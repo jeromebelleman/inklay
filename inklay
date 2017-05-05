@@ -16,6 +16,7 @@ import yaml
 LAYER = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/inkscape}groupmode='layer']"
 SHOWN = ".//{http://www.w3.org/2000/svg}g[@{http://www.inkscape.org/namespaces/inkscape}label='%s']"
 COULDNT = "Couldn't find layer labelled '%s'"
+UNSUPPORTED = "%s: unsupported export format"
 
 # Should the order of laysets be dictated by the layer order?  No. Because a
 # given layset may comprise e.g. a layer that comes first and a layer that
@@ -38,7 +39,7 @@ def main():
     '''
 
     parser = argparse.ArgumentParser(
-        description="Show layers and export PNGs or PDFs.",
+        description="Show layers and export PNGs, JPGs or PDFs.",
     )
     parser.add_argument('cfg', help="configuration YAML file")
     parser.add_argument('inkscape', help="Inkscape SVG file")
@@ -128,27 +129,36 @@ def main():
         try:
             arguments = ['inkscape']
 
+            if cfg['cfg']['format'] in ('png', 'pdf'):
+                fmt = cfg['cfg']['format']
+            elif cfg['cfg']['format'] == 'jpg':
+                fmt = 'png'
+            else:
+                print >> sys.stderr, UNSUPPORTED % cfg['cfg']['format']
+                return 1
+
             if 'number' in cfg['cfg'] and cfg['cfg']['number']:
                 arguments.append('--export-%s=%s/%03d-%s.%s' % (
-                    cfg['cfg']['format'],
+                    fmt,
                     args.outdir,
                     i,
                     key,
+                    # Leave extension to jpg if that's what it is
                     cfg['cfg']['format'],
                 ))
             else:
                 arguments.append('--export-%s=%s/%s.%s' % (
-                    cfg['cfg']['format'],
+                    fmt,
                     args.outdir,
                     key,
                     cfg['cfg']['format'],
                 ))
 
-            if cfg['cfg']['format'] == 'png':
+            if fmt in ('png', 'jpg'):
                 if 'dpi' in cfg['cfg']:
                     arguments.append('--export-dpi=%d' % cfg['cfg']['dpi'])
                 arguments.append('--export-width=%s' % cfg['cfg']['width'])
-            elif cfg['cfg']['format'] == 'pdf':
+            elif fmt == 'pdf':
                 # Not the default in spite of what the manpage says
                 if 'export-area-drawing' in cfg['cfg'] \
                     and cfg['cfg']['export-area-drawing']:
@@ -168,6 +178,14 @@ def main():
             print ' '.join(arguments)
         if not args.dryrun:
             subprocess.call(arguments, stderr=devnull)
+
+        # Run GraphicsMagick if needs be
+        if cfg['cfg']['format'] == 'jpg':
+            subprocess.call(['gm',
+                'convert',
+                '%s/%s.%s' % (args.outdir, key, cfg['cfg']['format']),
+                '%s/%s.%s' % (args.outdir, key, cfg['cfg']['format']),
+                ])
 
 if __name__ == '__main__':
     try:
