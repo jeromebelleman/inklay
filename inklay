@@ -52,10 +52,12 @@ def main():
                         help="show Inkscape command run")
     args = parser.parse_args()
 
-    with open(args.cfg) as fhl:
+    with open(os.path.expanduser(args.cfg)) as fhl:
         cfg = yaml.load(fhl)
 
     devnull = open(os.devnull, 'w')
+
+    outdir = os.path.expanduser(args.outdir)
 
     # Choose layer sets
     if args.layerset:
@@ -80,7 +82,7 @@ def main():
         print "Composing %s" % key
 
         # Parse XML
-        tree = ET.parse(args.inkscape)
+        tree = ET.parse(os.path.expanduser(args.inkscape))
 
         # Hide all layers
         for layer in tree.findall(LAYER):
@@ -140,7 +142,7 @@ def main():
             if 'number' in cfg['cfg'] and cfg['cfg']['number']:
                 arguments.append('--export-%s=%s/%03d-%s.%s' % (
                     fmt,
-                    args.outdir,
+                    outdir,
                     i,
                     key,
                     # Leave extension to jpg if that's what it is
@@ -149,7 +151,7 @@ def main():
             else:
                 arguments.append('--export-%s=%s/%s.%s' % (
                     fmt,
-                    args.outdir,
+                    outdir,
                     key,
                     cfg['cfg']['format'],
                 ))
@@ -183,8 +185,8 @@ def main():
         if cfg['cfg']['format'] == 'jpg':
             subprocess.call(['gm',
                 'convert',
-                '%s/%s.%s' % (args.outdir, key, cfg['cfg']['format']),
-                '%s/%s.%s' % (args.outdir, key, cfg['cfg']['format']),
+                '%s/%s.%s' % (outdir, key, cfg['cfg']['format']),
+                '%s/%s.%s' % (outdir, key, cfg['cfg']['format']),
                 ])
 
 if __name__ == '__main__':
