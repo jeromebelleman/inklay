@@ -50,6 +50,8 @@ def main():
                         help="don't run Inkscape")
     parser.add_argument('-v', '--verbose', action='store_true',
                         help="show Inkscape command run")
+    parser.add_argument('-f', '--force', action='store_true',
+                        help="force composing again even if nothing changed")
     args = parser.parse_args()
 
     with open(os.path.expanduser(args.cfg)) as fhl:
@@ -58,6 +60,16 @@ def main():
     devnull = open(os.devnull, 'w')
 
     outdir = os.path.expanduser(args.outdir)
+
+    # Check if anything changed
+    mtime = 0
+    for entry in os.listdir(outdir):
+        newmtime = os.path.getmtime('%s/%s' % (outdir, entry))
+        mtime = newmtime if newmtime > mtime else mtime
+    if not args.force:
+        if mtime > os.path.getmtime(args.cfg) and \
+             mtime > os.path.getmtime(args.inkscape):
+            return
 
     # Choose layer sets
     if args.layerset:
