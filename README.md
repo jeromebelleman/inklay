@@ -1,3 +1,6 @@
+Draw artistic slides as you would with Inkscape. Generate PNGs and PDFs from
+sets of layers.
+
 # NAME
 
 inklay – Show layers and export PNGs or PDFs
